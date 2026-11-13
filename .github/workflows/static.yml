@@ -1,0 +1,44 @@
+name: Publicar site Kruger
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Baixar arquivos
+        uses: actions/checkout@v6
+
+      - name: Descompactar site
+        run: |
+          unzip -o kauam.zip -d site
+          test -f site/chatgpt/index.html
+
+      - name: Configurar Pages
+        uses: actions/configure-pages@v5
+
+      - name: Enviar site
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: site/chatgpt
+
+      - name: Publicar site
+        id: deployment
+        uses: actions/deploy-pages@v4
